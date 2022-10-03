@@ -4,6 +4,8 @@ from senseglove_shared_resources.srv import Calibrate
 from . finger_distance_calibration import Calibration
 from math import sqrt, pow
 
+# bong
+from std_msgs.msg import Float64
 
 class FingerTipHandler:
     handedness_list = ["/lh", "/rh"]
@@ -16,8 +18,9 @@ class FingerTipHandler:
         self.senseglove_ns = "/senseglove/" + str(int(int(glove_nr) / 2)) + str(self.handedness_list[int(glove_nr) % 2])
         rospy.Subscriber(self.senseglove_ns + "/senseglove_states", SenseGloveState,
                          callback=self.callback, queue_size=1)  # queue size is necessary otherwise it is infinite
-        self.pub = rospy.Publisher(self.senseglove_ns + "/finger_distances", FingerDistanceFloats, queue_size=1)
-
+        # self.pub = rospy.Publisher(self.senseglove_ns + "/finger_distances", FingerDistanceFloats, queue_size=1)
+        self.pub = rospy.Publisher(self.senseglove_ns + "/finger_distances", Float64, queue_size=1) # bong
+        self.msg = Float64() # bong
         self._setup_calibration()
 
     def _setup_calibration(self):
@@ -72,15 +75,18 @@ class FingerTipHandler:
                    self.calibration.pinch_calibration_max[pinch_combination]
 
     def distance_publish(self):
-        finger_distance_message = FingerDistanceFloats()
-        finger_distance_message.th_ff.data = self.apply_calib((self.finger_tips[0] - self.finger_tips[1]).magnitude(),
-                                                              0, self.calib_mode)
-        finger_distance_message.th_mf.data = self.apply_calib((self.finger_tips[0] - self.finger_tips[2]).magnitude(),
-                                                              1, self.calib_mode)
-        finger_distance_message.th_rf.data = self.apply_calib((self.finger_tips[0] - self.finger_tips[3]).magnitude(),
-                                                              2, self.calib_mode)
-        finger_distance_message.th_lf.data = (self.finger_tips[0] - self.finger_tips[4]).magnitude()
-        self.pub.publish(finger_distance_message)
+        # finger_distance_message = FingerDistanceFloats()
+        # finger_distance_message.th_ff.data = self.apply_calib((self.finger_tips[0] - self.finger_tips[1]).magnitude(),
+        #                                                       0, self.calib_mode)
+        # finger_distance_message.th_mf.data = self.apply_calib((self.finger_tips[0] - self.finger_tips[2]).magnitude(),
+        #                                                       1, self.calib_mode)
+        # finger_distance_message.th_rf.data = self.apply_calib((self.finger_tips[0] - self.finger_tips[3]).magnitude(),
+        #                                                       2, self.calib_mode)
+        # finger_distance_message.th_lf.data = (self.finger_tips[0] - self.finger_tips[4]).magnitude()
+        # self.pub.publish(finger_distance_message)
+        msg = Float64() 
+        msg.data = self.apply_calib((self.finger_tips[0] - self.finger_tips[1]).magnitude(),0, self.calib_mode)
+        self.pub.publish(msg)
 
     def callback(self, data):
         if not self.calibration.is_calibrated():
